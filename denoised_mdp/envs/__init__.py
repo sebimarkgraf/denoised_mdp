@@ -22,6 +22,7 @@ from .interaction import env_interact_random_actor, env_interact_with_model, Env
 class EnvKind(enum.Enum):
     dmc = enum.auto()
     robodesk = enum.auto()
+    alr_dmc = enum.auto()
     old_robodesk = enum.auto()
 
     @staticmethod
@@ -31,6 +32,8 @@ class EnvKind(enum.Enum):
             from .dmc import make_env
         elif kind is EnvKind.robodesk:
             from .robodesk import make_env
+        elif kind is EnvKind.alr_dmc:
+            from .alr_dmc import make_env
         else:
             # kind is EnvKind.old_robodesk
             def make_env(spec: str, observation_output_kind: AutoResetEnvBase.ObsOutputKind,
