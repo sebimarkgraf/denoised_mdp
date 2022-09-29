@@ -12,4 +12,4 @@ mujoco
 dm_control
 imageio
 scikit-video
--e git+ssh://git@github.com/ALRhub/occluded_dmc.git#egg=distractor_dmc2gym
+-e git+ssh://git@github.com/sebimarkgraf/occluded_dmc.git@master#egg=distractor_dmc2gym
