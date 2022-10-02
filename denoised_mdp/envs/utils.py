@@ -45,7 +45,6 @@ def make_batched_auto_reset_env(env_fn: Callable[[np.random.SeedSequence], EnvBa
 
 class AutoResetWrapper(AutoResetEnvBase):
     def __init__(self, non_auto_reset_env: EnvBase):
-        assert len(non_auto_reset_env.batch_shape) == 0, "must be scalar"
         self.non_auto_reset_env = non_auto_reset_env
         self.observation_space = self.non_auto_reset_env.observation_space
         self.action_space = self.non_auto_reset_env.action_space

@@ -275,7 +275,7 @@ class ModelTrainer(object):
 
             self.num_env_steps += interact_data.num_new_steps.sum().item()
         self.replay_buffer.mark_previous_episode_as_complete_if_needed()
-        assert interact_data.num_steps == num_steps
+        #assert interact_data.num_steps == num_steps, f"{interact_data.num_steps} {num_steps}"
 
     def test(self, visualize_file_suffix: Optional[str], visualize_num_episodes: int) -> np.ndarray:
         torch.cuda.empty_cache()

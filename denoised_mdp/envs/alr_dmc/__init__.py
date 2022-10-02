@@ -4,12 +4,12 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-import os
 from types import SimpleNamespace
 from typing import Union, Any, Tuple
 
 import numpy as np
 import torch
+from gym.wrappers import StepAPICompatibility
 
 from ..abc import EnvBase, AutoResetEnvBase
 
@@ -17,9 +17,18 @@ from distractor_dmc2gym import make
 import gym
 
 
+class ActionWrapper(gym.ActionWrapper):
+    def action(self, action):
+        return action.detach().numpy()
+
+    def reverse_action(self, action):
+        return torch.from_numpy(action)
+
+
 class PyTorchWrapper(gym.ObservationWrapper):
     def observation(self, observation):
         return torch.from_numpy(np.ascontiguousarray(observation))
+
 
 class RealStepsWrapper(gym.Wrapper):
     def __init__(self, env, action_repeat):
@@ -35,16 +44,16 @@ class RealStepsWrapper(gym.Wrapper):
         return obs, info
 
     def step(self, action):
-        next_observation, reward, done, step_info = self.env.step(action)
+        next_observation, reward, terminated, truncated, step_info = self.env.step(action)
         self._actual_env_steps_taken += self._action_repeat
         step_info['actual_env_steps_taken'] = self._actual_env_steps_taken
         step_info = SimpleNamespace(**step_info)
-        return next_observation, reward, done, step_info
+        return next_observation, reward, terminated, truncated, step_info
 
 
 class CustomMethodsWrapper(EnvBase, gym.Wrapper):
     def sample_random_action(self, size=(), np_rng=None) -> Union[float, torch.Tensor]:
-        return self.env.action_space.sample()
+        return torch.from_numpy(self.env.action_space.sample())
 
     def reset(self) -> Tuple[torch.Tensor, 'EnvBase.Info']:
         return self.env.reset()
@@ -83,12 +92,10 @@ class CustomMethodsWrapper(EnvBase, gym.Wrapper):
         return self._action_repeat
 
 
-
 VARIANTS = [
     'dots_background',
     'dots_foreground',
 ]
-
 
 
 def make_env(spec: str, observation_output_kind: EnvBase.ObsOutputKind, seed,
@@ -133,13 +140,14 @@ def make_env(spec: str, observation_output_kind: EnvBase.ObsOutputKind, seed,
     else:
         raise ValueError(f"Unexpected environment: {spec}")
 
-
     return make_batched_auto_reset_env(
         lambda seed: CustomMethodsWrapper(
-            env=
-            PyTorchWrapper(RealStepsWrapper(
-                env=make(seed=seed, **kwargs),
-                action_repeat=action_repeat)),
+            env=StepAPICompatibility(
+                ActionWrapper(
+                    PyTorchWrapper(
+                        RealStepsWrapper(
+                            env=make(**kwargs),
+                            action_repeat=action_repeat))), output_truncation_bool=False),
             action_repeat=action_repeat,
             observation_output=observation_output_kind,
             max_episode_length=max_episode_length),
