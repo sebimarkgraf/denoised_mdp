@@ -20,7 +20,7 @@ import socket
 from collections import defaultdict
 
 import hydra
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig, OmegaConf, SCMode
 
 from tqdm.auto import tqdm
 import numpy as np
@@ -546,6 +546,9 @@ def main(dict_cfg: DictConfig) -> None:
     torch_seed, np_seed, data_collect_env_seed, replay_buffer_seed = split_seed(cast(int, cfg.seed), 4)
     np.random.seed(np.random.Generator(np.random.PCG64(np_seed)).integers(1 << 31))
     torch.manual_seed(np.random.Generator(np.random.PCG64(torch_seed)).integers(1 << 31))
+
+    wandb.tensorboard.patch(root_logdir=cfg.output_base_dir, tensorboard_x=True, pytorch=True)
+    wandb.init(config=OmegaConf.to_container(dict_cfg, structured_config_mode=SCMode.DICT), project="denoised_mdp", sync_tensorboard=True)
 
     # Trainer
     writer = SummaryWriter(cfg.output_dir)
