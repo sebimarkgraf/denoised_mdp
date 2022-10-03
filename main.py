@@ -508,7 +508,7 @@ class ModelTrainer(object):
         utils.rm_if_exists(self.cfg.preempt_ckpt_dir, maybe_dir=True)
 
 
-@hydra.main(version_base=None, config_name="config")
+@hydra.main(version_base=None, config_name="config", config_path="./")
 def main(dict_cfg: DictConfig) -> None:
     # parse
     _, cfg = to_config_and_instantiate(dict_cfg)
