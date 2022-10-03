@@ -46,7 +46,7 @@ from tensorboardX import SummaryWriter
 
 
 from config import InstantiatedConfig, to_config_and_instantiate
-
+import wandb
 
 class ModelTrainer(object):
     cfg: InstantiatedConfig
