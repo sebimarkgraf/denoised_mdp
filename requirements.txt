@@ -15,3 +15,4 @@ scikit-video
 -e git+ssh://git@github.com/sebimarkgraf/occluded_dmc.git@master#egg=distractor_dmc2gym
 wandb
 tensorboard
+hydra-submitit-launcher
