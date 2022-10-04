@@ -25,7 +25,6 @@ from omegaconf import DictConfig, OmegaConf, SCMode
 from tqdm.auto import tqdm
 import numpy as np
 import torch
-import torch.backends.cudnn
 from torch import nn, optim
 from PIL import Image
 
@@ -524,7 +523,8 @@ def main(dict_cfg: DictConfig) -> None:
     signal.signal(signal.SIGUSR1, handle_SIGUSR1_set_flag)
     logging.info('Signal handler installed')
 
-    torch.backends.cudnn.benchmark = True
+    import torch.backends.cudnn as cudnn
+    cudnn.benchmark = True
 
     # Log config
     logging.info('')
