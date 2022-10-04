@@ -73,17 +73,17 @@ class AutoResetWrapper(AutoResetEnvBase):
         observation, info = self.non_auto_reset_env.reset()
         auto_reset_info = AutoResetEnvBase.Info(
             observation_before_reset=torch.empty(0),
-            actual_env_steps_taken=info.actual_env_steps_taken,
+            actual_env_steps_taken=info["actual_env_steps_taken"],
         )
         return observation, auto_reset_info
 
     def step(self, action) -> Tuple[torch.Tensor, Any, Any, AutoResetEnvBase.Info]:
         next_observation, reward, done, step_info = self.non_auto_reset_env.step(action)
         observation_before_reset = next_observation
-        actual_env_steps_taken = step_info.actual_env_steps_taken
+        actual_env_steps_taken = step_info["actual_env_steps_taken"]
         if done:
             next_observation, reset_info = self.non_auto_reset_env.reset()  # we scalar env :)
-            actual_env_steps_taken += reset_info.actual_env_steps_taken  # add 0 in practice, but conceptually cleaner :)
+            actual_env_steps_taken += reset_info["actual_env_steps_taken"]  # add 0 in practice, but conceptually cleaner :)
         auto_reset_info = AutoResetEnvBase.Info(
             observation_before_reset=observation_before_reset,
             actual_env_steps_taken=actual_env_steps_taken,

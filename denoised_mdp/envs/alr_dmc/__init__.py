@@ -4,12 +4,11 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-from types import SimpleNamespace
 from typing import Union, Any, Tuple
 
 import numpy as np
 import torch
-from gym.wrappers import StepAPICompatibility
+from gym.wrappers import StepAPICompatibility, TimeLimit
 
 from ..abc import EnvBase, AutoResetEnvBase
 
@@ -33,21 +32,16 @@ class PyTorchWrapper(gym.ObservationWrapper):
 class RealStepsWrapper(gym.Wrapper):
     def __init__(self, env, action_repeat):
         super().__init__(env)
-        self._actual_env_steps_taken = 0
         self._action_repeat = action_repeat
 
     def reset(self, **kwargs):
-        self._actual_env_steps_taken = 0
         obs, info = self.env.reset(**kwargs)
-        info['actual_env_steps_taken'] = self._actual_env_steps_taken
-        info = SimpleNamespace(**info)
+        info['actual_env_steps_taken'] = self._action_repeat
         return obs, info
 
     def step(self, action):
         next_observation, reward, terminated, truncated, step_info = self.env.step(action)
-        self._actual_env_steps_taken += self._action_repeat
-        step_info['actual_env_steps_taken'] = self._actual_env_steps_taken
-        step_info = SimpleNamespace(**step_info)
+        step_info['actual_env_steps_taken'] = self._action_repeat
         return next_observation, reward, terminated, truncated, step_info
 
 
@@ -140,18 +134,18 @@ def make_env(spec: str, observation_output_kind: EnvBase.ObsOutputKind, seed,
     else:
         raise ValueError(f"Unexpected environment: {spec}")
 
+    def create_env(seed):
+        env = make(**kwargs)
+        env = TimeLimit(env, max_episode_steps=max_episode_length)
+        env = RealStepsWrapper(env, action_repeat=action_repeat)
+        env = PyTorchWrapper(env)
+        env = ActionWrapper(env)
+        env = StepAPICompatibility(env, output_truncation_bool=False)
+        env = CustomMethodsWrapper(env, action_repeat=action_repeat, observation_output=EnvBase.ObsOutputKind.image_uint8, max_episode_length=max_episode_length)
+        return env
+
     return make_batched_auto_reset_env(
-        lambda seed: CustomMethodsWrapper(
-            env=StepAPICompatibility(
-                ActionWrapper(
-                    PyTorchWrapper(
-                        RealStepsWrapper(
-                            env=make(**kwargs),
-                            action_repeat=action_repeat))), output_truncation_bool=False),
-            action_repeat=action_repeat,
-            observation_output=observation_output_kind,
-            max_episode_length=max_episode_length),
-        seed, batch_shape)
+        create_env, seed, batch_shape)
 
 
 __all__ = ['make_env']

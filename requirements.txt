@@ -16,3 +16,4 @@ scikit-video
 wandb
 tensorboard
 hydra-submitit-launcher
+imageio-ffmpeg
