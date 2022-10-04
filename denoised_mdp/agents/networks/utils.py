@@ -7,6 +7,7 @@
 
 from typing import *
 
+import cloudpickle
 import contextlib
 import enum
 
@@ -20,20 +21,23 @@ from torch.distributions.transforms import TanhTransform
 
 
 class ActivationKind(enum.Enum):
-    relu = nn.ReLU()
-    elu = nn.ELU()
-    tanh = nn.Tanh()
-    sigmoid = nn.Sigmoid()
+    relu = "ReLU"
+    elu = "ELU"
+    tanh = "Tanh"
+    sigmoid = "Sigmoid"
+
+
+def instantiate_activation_function(activation_name: str):
+    return getattr(nn, activation_name)()
 
 
 def get_activation_module(activation_function) -> nn.Module:
-    if isinstance(activation_function, str):
-        return ActivationKind[activation_function].value
+    if isinstance(activation_function, ActivationKind):#
+        return instantiate_activation_function(activation_function.value)
     elif isinstance(activation_function, nn.Module):
         return activation_function
-    else:
-        assert isinstance(activation_function, ActivationKind)
-        return activation_function.value
+    elif isinstance(activation_function, str):
+        return instantiate_activation_function(activation_function)
 
 
 # Wraps the input tuple for a function to process a time x batch x features sequence in batch x features (assumes one output)
