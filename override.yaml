@@ -1,6 +1,6 @@
 defaults:
   - config
-
+  - _self_
 env:
   kind: alr_dmc
   spec: cheetah_run_dots_background
