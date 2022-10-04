@@ -85,3 +85,4 @@ wandb/
 venv/
 multirun/
 outputs/
+results/
