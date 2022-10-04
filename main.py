@@ -547,7 +547,7 @@ def main(dict_cfg: DictConfig) -> None:
     np.random.seed(np.random.Generator(np.random.PCG64(np_seed)).integers(1 << 31))
     torch.manual_seed(np.random.Generator(np.random.PCG64(torch_seed)).integers(1 << 31))
 
-    wandb.tensorboard.patch(root_logdir=cfg.output_base_dir, tensorboard_x=True, pytorch=True)
+    wandb.tensorboard.patch(root_logdir=cfg.output_dir, tensorboard_x=True, pytorch=True)
     wandb.init(config=OmegaConf.to_container(dict_cfg, structured_config_mode=SCMode.DICT), project="denoised_mdp", sync_tensorboard=True)
 
     # Trainer
