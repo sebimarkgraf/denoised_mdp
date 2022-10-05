@@ -158,17 +158,17 @@ class ConcatEnv(AutoResetEnvBase):
     def _stack_infos(infos: List[AutoResetEnvBase.Info]) -> AutoResetEnvBase.Info:
         if len(infos):
             return AutoResetEnvBase.Info(
-                observation_before_reset=infos[0].observation_before_reset.unsqueeze(0),
-                actual_env_steps_taken=torch.as_tensor(infos[0].actual_env_steps_taken, dtype=torch.int64).unsqueeze(0),
+                observation_before_reset=infos[0]["observation_before_reset"].unsqueeze(0),
+                actual_env_steps_taken=torch.as_tensor(infos[0]["actual_env_steps_taken"], dtype=torch.int64).unsqueeze(0),
             )
         else:
             return AutoResetEnvBase.Info(
                 observation_before_reset=torch.stack(
-                    [info.observation_before_reset for info in infos],
+                    [info["observation_before_reset"] for info in infos],
                     dim=0,
                 ),
                 actual_env_steps_taken=stack_dim0_or_as_tensor(
-                    [info.actual_env_steps_taken for info in infos],
+                    [info["actual_env_steps_taken"] for info in infos],
                     dtype=torch.int64,
                 ),
             )

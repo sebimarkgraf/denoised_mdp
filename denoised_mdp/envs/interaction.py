@@ -146,7 +146,7 @@ def env_interact(env: AutoResetEnvBase, max_num_steps: Optional[int],
             # interact
             next_observation, reward, done, info = env.step(action)
             # update state
-            actual_env_steps_taken = torch.as_tensor(info.actual_env_steps_taken, dtype=torch.int64)
+            actual_env_steps_taken = torch.as_tensor(info["actual_env_steps_taken"], dtype=torch.int64)
             basic_env_state = BasicEnvState(
                 num_episodes=basic_env_state.num_episodes + torch.as_tensor(done, dtype=torch.int64),
                 num_steps=basic_env_state.num_steps + actual_env_steps_taken,
@@ -166,7 +166,7 @@ def env_interact(env: AutoResetEnvBase, max_num_steps: Optional[int],
                 is_first_step=is_first_step,
                 observation=observation,
                 action=action,
-                observation_before_reset=info.observation_before_reset,
+                observation_before_reset=info["observation_before_reset"],
                 state_after_step=next_state,
                 last_info=last_info,
             )

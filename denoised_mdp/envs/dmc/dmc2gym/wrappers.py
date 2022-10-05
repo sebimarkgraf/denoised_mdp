@@ -295,7 +295,7 @@ class DMCWrapper(core.Env, EnvBase):
                 self.background_source.increment(amount=1)
             self._spatial_jitter_vec = next(self._spatial_jitter_iter)
         obs = self._get_obs()
-        return obs, reward, done, EnvBase.Info(actual_env_steps_taken)  #, extra
+        return obs, reward, done, EnvBase.Info(actual_env_steps_taken=actual_env_steps_taken)  #, extra
 
     def reset(self) -> Tuple[torch.Tensor, EnvBase.Info]:
         self._steps_taken = 0
@@ -306,7 +306,7 @@ class DMCWrapper(core.Env, EnvBase):
             randastddev=self._spatial_jitter_randastddev))
         self._spatial_jitter_vec = next(self._spatial_jitter_iter)
         obs = self._get_obs()
-        return obs, EnvBase.Info(0)
+        return obs, EnvBase.Info(actual_env_steps_taken=0)
 
     def render(self, mode='rgb_array', height=None, width=None, camera_id=0):
         assert mode == 'rgb_array', 'only support rgb_array mode, given %s' % mode

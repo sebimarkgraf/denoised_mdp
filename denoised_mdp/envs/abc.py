@@ -132,7 +132,7 @@ class EnvBase(abc.ABC):
         # Sample an action randomly from a uniform distribution over all valid actions
         pass
 
-    class Info(NamedTuple):
+    class Info(TypedDict):
         actual_env_steps_taken: Union[torch.Tensor, int]
 
     @abc.abstractmethod
@@ -164,7 +164,7 @@ class EnvBase(abc.ABC):
 
 
 class AutoResetEnvBase(EnvBase):
-    class Info(NamedTuple):
+    class Info(TypedDict):
         observation_before_reset: torch.Tensor
         actual_env_steps_taken: Union[torch.Tensor, int]
 
