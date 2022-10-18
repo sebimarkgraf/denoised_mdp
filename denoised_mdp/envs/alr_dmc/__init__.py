@@ -89,6 +89,7 @@ class CustomMethodsWrapper(EnvBase, gym.Wrapper):
 VARIANTS = [
     'dots_background',
     'dots_foreground',
+    'noiseless'
 ]
 
 
@@ -130,6 +131,11 @@ def make_env(spec: str, observation_output_kind: EnvBase.ObsOutputKind, seed,
             distraction_source="dots",
             distraction_location="foreground",
             difficulty="hard"
+        )
+    elif variant == "noiseless":
+        kwargs.update(
+            distraction_source=None,
+            distraction_location=None,
         )
     else:
         raise ValueError(f"Unexpected environment: {spec}")
