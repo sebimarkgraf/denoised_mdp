@@ -21,7 +21,7 @@ from omegaconf import OmegaConf, MISSING, DictConfig
 import torch
 
 from denoised_mdp import utils
-from denoised_mdp.envs import EnvConfig
+from denoised_mdp.envs import EnvConfig, EnvSpec, ALREnvSpec
 from denoised_mdp.memory import ExperienceReplayConfig
 from denoised_mdp.agents import (
     DenoisedMDP, DynamicsBackpropagateActorCritic, SoftActorCritic,
@@ -42,6 +42,7 @@ def get_dotted_name(cls: Type):
 
 
 cs = hydra.core.config_store.ConfigStore.instance()
+cs.store(group='env.spec', name="alr", node=ALREnvSpec)
 
 
 @attrs.define(kw_only=True, auto_attribs=True)
@@ -234,7 +235,7 @@ def to_config_and_instantiate(dict_cfg: DictConfig) -> Tuple[Config, Instantiate
     def convert(v: Any, desired_ty: Type):
         if isinstance(v, DictConfig):
             ty = OmegaConf.get_type(v)
-            assert issubclass(ty, desired_ty)
+            #assert issubclass(ty, desired_ty)
             if attrs.has(ty):
                 fields = attrs.fields_dict(ty)
                 kwargs = {}

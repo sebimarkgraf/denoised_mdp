@@ -34,6 +34,7 @@ class EnvKind(enum.Enum):
             from .robodesk import make_env
         elif kind is EnvKind.alr_dmc:
             from .alr_dmc import make_env
+
         else:
             # kind is EnvKind.old_robodesk
             def make_env(spec: str, observation_output_kind: AutoResetEnvBase.ObsOutputKind,
@@ -53,6 +54,16 @@ class EnvKind(enum.Enum):
                         max_episode_length=max_episode_length, seed=seed, batch_shape=batch_shape)
 
 
+@attrs.define()
+class EnvSpec:
+    ...
+
+@attrs.define()
+class ALREnvSpec(EnvSpec):
+    task: str
+    domain: str
+    distraction: str
+
 
 @attrs.define(kw_only=True, auto_attribs=True)
 class EnvConfig:
@@ -63,7 +74,7 @@ class EnvConfig:
         def __call__(self, *, for_storage: bool, seed: int, batch_shape=()) -> AutoResetEnvBase: ...
 
     kind: EnvKind = MISSING
-    spec: str = MISSING
+    spec: ALREnvSpec = MISSING
     action_repeat: int = attrs.field(default=2, validator=attrs.validators.gt(0))
     max_episode_length: int = attrs.field(default=1000, validator=attrs.validators.gt(0))
 

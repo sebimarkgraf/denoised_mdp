@@ -93,19 +93,14 @@ VARIANTS = [
 ]
 
 
-def make_env(spec: str, observation_output_kind: EnvBase.ObsOutputKind, seed,
+def make_env(spec, observation_output_kind: EnvBase.ObsOutputKind, seed,
              max_episode_length, action_repeat, batch_shape):
     # avoid circular imports
     from ..utils import make_batched_auto_reset_env
 
-    for variant in VARIANTS:
-        if spec.endswith('_' + variant):
-            break
-    else:
-        # if not break
-        raise ValueError(f"Unexpected environment: {spec}")
-
-    domain_name, task_name = spec[:-(len(variant) + 1)].split('_', maxsplit=1)
+    domain_name = spec.domain
+    task_name = spec.task
+    distraction = spec.distraction
 
     kwargs = dict(
         domain_name=domain_name,
@@ -117,28 +112,12 @@ def make_env(spec: str, observation_output_kind: EnvBase.ObsOutputKind, seed,
         from_pixels=True,
         environment_kwargs=None,
         visualize_reward=False,
-        channels_first=True
+        channels_first=True,
+        distraction_source=distraction,
+        distraction_location="background",
+        difficulty='hard'
     )
 
-    if variant == 'dots_background':
-        kwargs.update(
-            distraction_source="dots",
-            distraction_location="background",
-            difficulty="hard"
-        )
-    elif variant == "dots_foreground":
-        kwargs.update(
-            distraction_source="dots",
-            distraction_location="foreground",
-            difficulty="hard"
-        )
-    elif variant == "noiseless":
-        kwargs.update(
-            distraction_source=None,
-            distraction_location=None,
-        )
-    else:
-        raise ValueError(f"Unexpected environment: {spec}")
 
     def create_env(seed):
         env = make(**kwargs)

@@ -1,15 +1,18 @@
 defaults:
   - config
   - _self_
+  - env.spec: alr
+
 env:
   kind: alr_dmc
-  spec: cheetah_run_dots_background
+  spec: {domain: cheetah, task: run, distraction: dots_pendulum}
 
-hydra:
-  launcher:
-    timeout_min: 30
-    cpus_per_task: 10
-    gpus_per_node: 1
-    name: ${hydra.job.name}
-    partition: dev_gpu_4
+seed: 1
+#hydra:
+#  launcher:
+#    timeout_min: 30
+#    cpus_per_task: 10
+    #gpus_per_node: 1
+    #name: ${hydra.job.name}
+    #partition: dev_gpu_4
 
