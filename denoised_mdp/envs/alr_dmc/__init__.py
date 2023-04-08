@@ -12,7 +12,7 @@ from gym.wrappers import StepAPICompatibility, TimeLimit
 
 from ..abc import EnvBase, AutoResetEnvBase
 
-from distractor_dmc2gym import make
+from gym_distractions import make
 import gym
 
 
@@ -111,7 +111,6 @@ def make_env(spec, observation_output_kind: EnvBase.ObsOutputKind, seed,
         camera_id=0,
         from_pixels=True,
         environment_kwargs=None,
-        visualize_reward=False,
         channels_first=True,
         distraction_source=distraction,
         distraction_location="background",

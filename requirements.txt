@@ -12,7 +12,7 @@ mujoco
 dm_control
 imageio
 scikit-video
--e git+ssh://git@github.com/sebimarkgraf/occluded_dmc.git@master#egg=distractor_dmc2gym
+gym-distractions==0.1.1
 wandb
 tensorboard
 hydra-submitit-launcher
