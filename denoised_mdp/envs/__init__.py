@@ -73,7 +73,7 @@ class EnvConfig:
     class InstantiatedT(Protocol):
         def __call__(self, *, for_storage: bool, seed: int, batch_shape=()) -> AutoResetEnvBase: ...
 
-    kind: EnvKind = MISSING
+    kind: EnvKind = Envkind.alr_dmc
     spec: ALREnvSpec = MISSING
     action_repeat: int = attrs.field(default=2, validator=attrs.validators.gt(0))
     max_episode_length: int = attrs.field(default=1000, validator=attrs.validators.gt(0))
