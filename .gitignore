@@ -79,3 +79,5 @@ venv/
 multirun/
 outputs/
 results/
+**/__pycache__
+

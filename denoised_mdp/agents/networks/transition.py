@@ -350,6 +350,7 @@ class TransitionModel(jit.ScriptModule):
         action_size: int,
         hidden_size: int,
         embedding_size: int,  # enc(o_t)
+        z_prior_uses_y: bool = True,
         activation_function: str = "relu",
         min_stddev: float = 0.1,
     ):
@@ -363,6 +364,7 @@ class TransitionModel(jit.ScriptModule):
         self.z_state_size = z_state_size
         self.embedding_size = embedding_size
         self.action_size = action_size
+        self.z_prior_uses_y = z_prior_uses_y
 
         assert (x_belief_size > 0) and (x_state_size > 0)
         assert (y_belief_size > 0) == (y_state_size > 0)
@@ -402,7 +404,9 @@ class TransitionModel(jit.ScriptModule):
         if z_belief_size > 0:
             self.z_state_action_x_pre_rnn = BottledModule(nn.Sequential(
                 nn.Linear(
-                    x_belief_size + x_state_size + z_state_size + action_size,
+                    x_belief_size + x_state_size +
+                    (y_belief_size + y_state_size) * int(z_prior_uses_y) +
+                    z_state_size + action_size,
                     z_belief_size,
                 ),
                 get_activation_module(activation_function),
@@ -619,10 +623,11 @@ class TransitionModel(jit.ScriptModule):
                 y_prior_states[t] = y_prior_state
             else:
                 y_belief = y_beliefs[t]
+                y_prior_state = y_prior_states[t]
 
             # [XY posterior]
             if next_observations is not None:
-                # Compute state posterior by applying transition dynamics and using current observation
+                # Compute state posterior by applying transition dynamics (i.e., using *_belief) and using current observation
                 xy_posterior_input = torch.cat(
                     [x_belief, y_belief, prev_z_belief, prev_z_state, next_observations[t]],
                     dim=-1,
@@ -653,22 +658,29 @@ class TransitionModel(jit.ScriptModule):
                 y_posterior_states[t] = y_posterior_state
 
                 x_state_for_z_belief = x_posterior_state
+                y_state_for_z_belief = y_posterior_state
             else:
                 x_posterior_state = x_posterior_states[t]
                 y_posterior_state = y_posterior_states[t]
                 x_state_for_z_belief = x_prior_state
+                y_state_for_z_belief = y_prior_state
 
             if self.z_belief_size > 0:
                 # [Z prior] Compute belief (deterministic hidden state)
                 z_belief = self.z_rnn(
                     self.z_state_action_x_pre_rnn(
                         torch.cat(
-                            [
-                                x_belief,
-                                x_state_for_z_belief,
-                                prev_z_state,
-                                action,
-                            ],
+                            (
+                                [
+                                    x_belief,
+                                    x_state_for_z_belief,
+                                    prev_z_state,
+                                    action,
+                                ] +
+                                (
+                                    [y_belief, y_state_for_z_belief] if self.z_prior_uses_y else []
+                                )
+                            ),
                             dim=-1,
                         ),
                     ),
@@ -686,7 +698,7 @@ class TransitionModel(jit.ScriptModule):
 
                 # [Z posterior]
                 if next_observations is not None:
-                    # Compute state posterior by applying transition dynamics and using current observation
+                    # Compute state posterior by applying transition dynamics (i.e., using *_belief) and using current observation
                     z_posterior_input = torch.cat(
                         [x_belief, x_posterior_state, y_belief, y_posterior_state, z_belief, next_observations[t]],
                         dim=-1,
@@ -865,6 +877,7 @@ class TransitionModel(jit.ScriptModule):
             x_posterior_state = x_posterior_mean + x_posterior_stddev * x_posterior_noise
 
             x_state_for_z_belief = x_posterior_state
+            y_state_for_z_belief = y_posterior_state
         else:
             x_posterior_mean = empty_tensor
             y_posterior_mean = empty_tensor
@@ -873,6 +886,7 @@ class TransitionModel(jit.ScriptModule):
             x_posterior_state = empty_tensor
             y_posterior_state = empty_tensor
             x_state_for_z_belief = x_prior_state
+            y_state_for_z_belief = y_prior_state
 
         z_posterior_mean = empty_tensor
         z_posterior_stddev = empty_tensor
@@ -882,12 +896,17 @@ class TransitionModel(jit.ScriptModule):
             z_belief = self.z_rnn(
                 self.z_state_action_x_pre_rnn(
                     torch.cat(
-                        [
-                            x_belief,
-                            x_state_for_z_belief,
-                            prev_z_state,
-                            action,
-                        ],
+                        (
+                            [
+                                x_belief,
+                                x_state_for_z_belief,
+                                prev_z_state,
+                                action,
+                            ] +
+                            (
+                                [y_belief, y_state_for_z_belief] if self.z_prior_uses_y else []
+                            )
+                        ),
                         dim=-1,
                     ),
                 ),
